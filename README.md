@@ -19,3 +19,5 @@ For our little project here, we will be starting from a starter project for Mete
 This starter app contains decent styling via [Twitter Bootstrap](http://getbootstrap.com/), a basic accounts system, JQuery and JQuery validation for forms, and a lot of other goodies.
 
 So, for this assignment: grab a copy of this base project, have it up and running in your local repository and explore the code a bit.
+
+Once you have the code up and running locally, be sure to commit to your repo.
