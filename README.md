@@ -3,9 +3,19 @@
 Welcome in this online course on SaaS MVP Engineering.
 
 
-# Assignment 1
-Install meteor, create your first meteor project and push it to an (public) git repo of your choice.
+# Assignment 2
+Congrats!! You now have your first "hello world" app up and running.
 
-Check out https://www.meteor.com/install for the details.
+To claim you have an MPV now, would be a bit of an overstatement ;)
 
-And while you are at it, just scroll through the tutorial to get quick intro to the meteor full stack web framework we will be using throughout this course.
+In order to get a head start, people often don't start from scratch, they start from "starter projects". Starter projects are typically bare bone apps that include basic styling, often a login system, a file layout reflecting best practices for the given framework, a collection of commonly used modules etc.
+
+You'll find starter projects for virtually every self respecting framework:
+* if you're into ruby on rails, you have https://github.com/RailsApps/rails-composer
+* if laravel (php) is your thing: check https://github.com/andrewelkins/Laravel-4-Bootstrap-Starter-Site
+
+For our little project here, we will be starting from a starter project for Meteor by The Meteor Chef: https://github.com/themeteorchef/base
+
+This starter app contains decent styling via [Twitter Bootstrap](http://getbootstrap.com/), a basic accounts system, JQuery and JQuery validation for forms, and a lot of other goodies.
+
+So, for this assignment: grab a copy of this base project, have it up and running in your local repository and explore the code a bit.
