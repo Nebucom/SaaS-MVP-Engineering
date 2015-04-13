@@ -18,4 +18,8 @@ For our little project here, we will be starting from a starter project for Mete
 
 This starter app contains decent styling via [Twitter Bootstrap](http://getbootstrap.com/), a basic accounts system, JQuery and JQuery validation for forms, and a lot of other goodies.
 
-So, for this assignment: grab a copy of this base project, have it up and running in your local repository and explore the code a bit.
+So, for this assignment:
+1. grab a copy of this base project at https://github.com/themeteorchef/base
+1. Have it up and running in your local repository and
+1. Change the title of the home page, in the navigation, from Base to MVP
+1. Commit the code to your git repository
