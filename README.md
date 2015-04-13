@@ -3,23 +3,14 @@
 Welcome in this online course on SaaS MVP Engineering.
 
 
-# Assignment 2
-Congrats!! You now have your first "hello world" app up and running.
+# Assignment 3
+You have the skeleton of the MVP up and running. Let's start to add what we think is the minimal feature set of for our application. Mind that this is just a simple MVP for the purpose of this bootcamp, I'm pretty sure you won't impress a large number of users with this ;)
 
-To claim you have an MPV now, would be a bit of an overstatement ;)
+Here is what we will be doing in this assignment:
+1. Introduce a new page with a "Connect to Twitter" button.
+1. Implement connecting to Twitter once the user presses this "Connect to Twitter" button.
+1. Change the routing so that a user that is not yet connected to twitter is automagically redirected to the connect-to-twitter page
+1. Introduce a page where a logged in user can enter up to 3 keywords she wants to track on Twitter
+1. After submitting these keywords, save these keywords, start a twitter stream on these keywords, save incoming tweets into the database and show the user a real-time timeline of tweets matching her keywords.
 
-In order to get a head start, people often don't start from scratch, they start from "starter projects". Starter projects are typically bare bone apps that include basic styling, often a login system, a file layout reflecting best practices for the given framework, a collection of commonly used modules etc.
-
-You'll find starter projects for virtually every self respecting framework:
-* if you're into ruby on rails, you have https://github.com/RailsApps/rails-composer
-* if laravel (php) is your thing: check https://github.com/andrewelkins/Laravel-4-Bootstrap-Starter-Site
-
-For our little project here, we will be starting from a starter project for Meteor by The Meteor Chef: https://github.com/themeteorchef/base
-
-This starter app contains decent styling via [Twitter Bootstrap](http://getbootstrap.com/), a basic accounts system, JQuery and JQuery validation for forms, and a lot of other goodies.
-
-So, for this assignment:
-1. grab a copy of this base project at https://github.com/themeteorchef/base
-1. Have it up and running in your local repository and
-1. Change the title of the home page, in the navigation, from Base to MVP
-1. Commit the code to your git repository
+For each of these steps, there are detailed walkthroughs in the Git Repo
