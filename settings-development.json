@@ -2,7 +2,11 @@
   "public": {
     "key": "value"
   },
-  "private": {
-    "key": "value"
+  "app_keys": {
+    "twitter": {
+      "service": "twitter",
+      "consumerKey": "2TSH7rq1LJcdhi2GxfXBrKLqf",
+      "secret": "LxIbGXCk3nugssq3vqAlDE9gsYkON1nYQWvvoJvQKBHDXTncum"
+    }
   }
 }
