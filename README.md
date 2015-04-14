@@ -198,4 +198,19 @@ Dashboard.deny({
 
 ````
 
-Now that we have the basic infrastructure
+Now that we have the basic infrastructure in place to store the settings of a dashboard, let's call this method from our client controller. You need to replace that alert(keywords) call with the following code.
+````javascript
+submitHandler: function() {
+  var keywords = [$('[name="keyword1"]').val(), $('[name="keyword2"]').val(), $('[name="keyword3"]').val()];
+  // strip out empty strings if necessary
+  keywords = _.compact(keywords);
+  Meteor.call("newDashboard", keywords, function(error, result) {
+    if (error) {
+      Bert.alert("Something went wrong:" + error.reason, 'danger');
+    }
+    if (result) {
+      Bert.alert("Dashboard saved successfully", 'success');
+    }
+  });
+}
+````
