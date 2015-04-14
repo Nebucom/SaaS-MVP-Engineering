@@ -85,12 +85,13 @@ In your settings-development.json file, add a configuration like the following
 A few more things to: First, we need to store these credentials into the database in a "Service Configuration Object". Don't worry about it too much, this is a meteor thingy. The best way to do this is at startup time of your application. So under server/admin/startup-functions/ introduce a file called: configure-twitter.js and add following content:
 
 ````javascript
-// remove any previous twitter configuration
-function configureTwitter() {
+configureTwitter = function() {
+  // remove any previous configuration
   ServiceConfiguration.configurations.remove({
     service: "twitter"
   });
-  ServiceConfiguration.configurations.insert(Meteor.settings.app_keys);
+  ServiceConfiguration.configurations.insert(Meteor.settings.app_keys.twitter);
+};
 };
 ````
 And call this function at startup time:
@@ -103,9 +104,15 @@ configureTwitter();
 And finally, in client/controllers/authenticated/connect-to-twitter.js, replace the alert() call with a call with the following call:
 
 ````javascript
-Meteor.connectWith('twitter', {}, function(err) {
-			if (err && err[0] && err[0] instanceof Error) {
-				Bert.alert(err[0].reason, 'danger');
-				return false;
-			}````
-      Bert.alert('Succesfully connected to Twitter!', 'success');
+Template.connectToTwitter.events({
+  "click #connect-to-twitter": function(event, template) {
+    Meteor.connectWith('twitter', {}, function(err) {
+      if (err && err[0] && err[0] instanceof Error) {
+        Bert.alert(err[0].reason, 'danger');
+        return false;
+      }
+      Bert.alert('Successfully connected to Twitter!', 'success');
+    });
+  }
+});
+````
