@@ -15,104 +15,187 @@ Here is what we will be doing in this assignment:
 
 For each of these steps, there are detailed walkthroughs in the Git Repo
 
-### 3.2 Connecting to Twitter
-In order to allow our users to connect their Twitter account to our application, we need to
-1. Add Twitter login support in our application
-1. Create a Twitter application and get ourselves a pair of application keys.
+### 3.3 Defining a new dashboard
+In this assignment, we will build a page where users can enter up to 3 keywords that will be tracked in real time by our application.
 
+Like always, we will do this in small steps.
 
-#### Twitter authentication support in our app
-Meteor supports logging in via Twitter almost automatically. It is mostly a matter of installing a few packages.
+#### Introduce a "New Dashboard" page
+
+Introduce a new route under dashboard/new
+
+````javascript
+// in client/routes/routes-authenticated.js
+Router.route('dashboard.new', {
+  path: '/dashboard/new',
+  template: 'newDashboard'
+});
 ````
-meteor add twitter service-configuration mondora:connect-with
+Next, introduce both the newDashboard view and controller.
+
+For the view:
+````html
+<!-- in client/views/authenticated/new-dashboard.html -->
+<template name="newDashboard">
+  <div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-4">
+      <h3 class="page-header">New Dashboard</h3>
+      <form id="newDashboard">
+        <div class="form-group">
+          <label for="keyword1">First Keyword</label>
+          <input type="text" name="keyword1" class="form-control" placeholder="#keyword" required>
+        </div>
+        <!-- end .form-group -->
+        <div class="form-group">
+          <label for="keyword2">Second Keyword</label>
+          <input type="text" name="keyword2" class="form-control" placeholder="#keyword">
+        </div>
+        <!-- end .form-group -->
+        <div class="form-group">
+          <label for="keyword3">Third Keyword</label>
+          <input type="text" name="keyword3" class="form-control" placeholder="#keyword">
+        </div>
+        <!-- end .form-group -->
+        <div class="form-group">
+          <input type="submit" class="btn btn-success" value="Save Settings">
+        </div>
+        <!-- end .form-group -->
+      </form>
+    </div>
+    <!-- end .col-xs-12 -->
+  </div>
+  <!-- end .row -->
+</template>
 ````
-The twitter package will give us twitter oauth login stuff, while the mondora:connect-with packages allows us to connect an existing user to a twitter account.
+For the controller, things are a bit more complicated. We need to do some validations of the input: the first keyword is required, the other keywords are optional. The keywords themselves need to be single word strings. And when these validations pass, we'll need to save these keywords in the database, together with a reference to our user.
 
-#### Creating a Twitter app
-Developers that want to create apps for the Twitter platform, need to tell Twitter they're doing that. In return, you'll receive a set of application keys that you're app will need to authenticate to Twitter.
+So, start with introducing the controllers file at client/controllers/authenticated/new-dashboard.js.
+For form validation, we use a JQuery plugin called JQueryValidation for that. Check http://jqueryvalidation.org/ for details.
 
-So head over to  https://apps.twitter.com/ and create the application using the following settings:
+So, in a first step, add the validations to the form. This can be done using the Template.mytemplate.onRendered callback of meteor (http://docs.meteor.com/#/full/template_onRendered). We'll wait a bit with the saving into the database part, we'll implement that in a bit. For the time being, just alert() the keywords of the form, if the form is valid.
 
-Name, description and website can be filled in to your hart's content, use
-http://127.0.0.1:3000/_oauth/twitter for twitter callback.
-
-Next thing we need to do is to store these credentials in our database, such that Meteor knows about these.
-
-This puts us for a dilemma: are we going to hard code these keys somewhere, will we check them in into version control? And what about having different keys for productions, testing and development?
-
-Rule of thumb number one:
-````
-Never put your keys in (public) repositories.
-````
-If you put your keys somewhere in source code or config files, (and you will), be sure to .gitignore them.
-
-Rule of thumb number two:
-````
-Never reuse keys between developers and / or environments
-````
-Ideally, each developer should have her own set of keys. Idem for environments. You don't want to accidentally run tests against say an online billing service with the production settings, thus actually charging credit cards, do you?
-
-So, for this exercise, we're going to be a bit pragmatic, yet do the right thing. We'll introduce 2 settings files:
-1. settings-development.json
-2. settings-production.json
-
-Both files will be added to .gitignore, so we don't check them in. We will use either settings files to run either meteor locally in development, or to run meteor in production later on.
-
-So add the 2 following lines to your .gitignore
-````
-settings-development.json
-settings-production.json
-````
-
-Now we have these settings files, let's make sure we use these settings files to store our credentials. We will do this in the private part of the settings file.
-
-In your settings-development.json file, add a configuration like the following
-````json
-{
-  "public": {
-    "key": "value"
-  },
-  "app_keys": {
-      "twitter": {
-        "service": "twitter",
-        "consumerKey": "<your consumer key>",
-        "secret": "<your consumer secret>"
+````javascript
+Template.newDashboard.onRendered(function() {
+  $('#newDashboard').validate({
+    rules: {
+      keyword1: {
+        required: true,
+        minlength: 2,
+        maxlength: 15
+      },
+      keyword2: {
+        required: false,
+        minlength: 2,
+        maxlength: 15
+      },
+      keyword3: {
+        required: false,
+        minlength: 2,
+        maxlength: 15
       }
+    },
+    messages: {
+      keyword1: {
+        required: "Please enter at least one keywords",
+        minlength: "Keyword needs to have at least 2 characters.",
+        maxlength: "Keyword can have at most 15 characters."
+      },
+      keyword2: {
+        minlength: "Keyword needs to have at least 2 characters.",
+        maxlength: "Keyword can have at most 15 characters."
+      },
+      keyword3: {
+        minlength: "Keyword needs to have at least 2 characters.",
+        maxlength: "Keyword can have at most 15 characters."
+      },
+    },
+    submitHandler: function() {
+      var keywords = [$('[name="keyword1"]').val(), $('[name="keyword2"]').val(), $('[name="keyword3"]').val()];
+      // strip out empty strings if necessary
+      keywords = _.compact(keywords);
+      alert(keywords);
     }
-}
-````
-
-A few more things to: First, we need to store these credentials into the database in a "Service Configuration Object". Don't worry about it too much, this is a meteor thingy. The best way to do this is at startup time of your application. So under server/admin/startup-functions/ introduce a file called: configure-twitter.js and add following content:
-
-````javascript
-configureTwitter = function() {
-  // remove any previous configuration
-  ServiceConfiguration.configurations.remove({
-    service: "twitter"
   });
-  ServiceConfiguration.configurations.insert(Meteor.settings.app_keys.twitter);
-};
-};
-````
-And call this function at startup time:
-````javascript
-
-// in server/admin/startup.js add
-configureTwitter();
+});
 ````
 
-And finally, in client/controllers/authenticated/connect-to-twitter.js, replace the alert() call with a call with the following call:
+In a regular web application, you'd submit this form either through a regular POST, or do an AJAX call to your server. In Meteor, this is abstracted away through means of _Meteor methods_. You can see these methods as remote procedure calls, whereby you do not have to worry a thing how these go over the wire.
 
+Let's introduce such a method that takes in an array of keywords, and that stores those keywords into a dashboards collections.
+For documentation on how to use Meteor methods check http://docs.meteor.com/#/full/meteor_methods
+
+In server/methods/insert introduce a file called new-dashboard.js with following content
 ````javascript
-Template.connectToTwitter.events({
-  "click #connect-to-twitter": function(event, template) {
-    Meteor.connectWith('twitter', {}, function(err) {
-      if (err && err[0] && err[0] instanceof Error) {
-        Bert.alert(err[0].reason, 'danger');
-        return false;
-      }
-      Bert.alert('Successfully connected to Twitter!', 'success');
-    });
+Meteor.methods({
+  newDashboard: function(keywords) {
+    // check the user is logged in.
+    if (!Meteor.userId()) {
+      throw new Meteor.Error("not-authorized");
+    }
+
+
+    // Check the argument. Assuming an Array type here.
+    check(keywords, Array);
+
+    // Perform the insert.
+    try {
+      var dashboardId = Dashboards.insert({
+        keywords: keywords,
+        userId: Meteor.userId(),
+        state: 'running'
+      });
+      return dashboardId;
+    } catch (exception) {
+      // If an error occurs, return it to the client.
+      return exception;
+    }
   }
 });
 ````
+A careful reader would have noticed this Dashboard.insert thingy. Well, in Meteor, as in every other self respecting web framework, you can define what data to store in the database and have an ORM (or ODM) handle most of the query details.
+
+Let's define collections/dashboards.js and define our dashboard collections in there.
+````javascript
+Dashboard = new Meteor.Collection('dashboard');
+
+/*
+ * Allow
+ */
+
+Dashboard.allow({
+  insert: function() {
+    // Disallow inserts on the client by default.
+    return false;
+  },
+  update: function() {
+    // Disallow updates on the client by default.
+    return false;
+  },
+  remove: function() {
+    // Disallow removes on the client by default.
+    return false;
+  }
+});
+
+/*
+ * Deny
+ */
+
+Dashboard.deny({
+  insert: function() {
+    // Deny inserts on the client by default.
+    return true;
+  },
+  update: function() {
+    // Deny updates on the client by default.
+    return true;
+  },
+  remove: function() {
+    // Deny removes on the client by default.
+    return true;
+  }
+});
+
+````
+
+Now that we have the basic infrastructure
