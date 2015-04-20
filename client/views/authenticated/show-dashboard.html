@@ -1,0 +1,46 @@
+<template name="showDashboard">
+  <div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-6">
+      <h1>Dashboard for {{dashboard.keywords}}</h1>
+
+      <h2>Tweets</h2>
+      <div class="qa-message-list">
+        {{#each tweets}} {{> tweet}} {{/each}}
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<template name="tweet">
+  <div class="message-item">
+    <div class="message-inner">
+      <div class="message-head clearfix">
+        <div class="avatar pull-left">
+          <a target="_blank" href="https://twitter.com/intent/user?screen_name={{tweet.user.screen_name}}">
+            <img src="{{tweet.user.profile_image_url}}">
+          </a>
+        </div>
+        <div class="user-detail">
+          <h5 class="handle">{{tweet.user.screen_name}}</h5>
+          <div class="post-meta">
+            <div class="asker-meta">
+              <span class="qa-message-what"></span>
+              <span class="qa-message-when">
+                <span class="qa-message-when-data">{{tweet.created_at}}</span>
+              </span>
+              <span class="qa-message-who">
+                <span class="qa-message-who-pad">by </span>
+                <span class="qa-message-who-data"><a target="_blank" href="https://twitter.com/intent/user?screen_name={{tweet.user.screen_name}}">{{tweet.user.screen_name}}</a>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="qa-message-content">
+        {{{autolink tweet}}}
+      </div>
+    </div>
+  </div>
+</template>

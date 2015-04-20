@@ -8,12 +8,6 @@ Router.route('index', {
   template: 'index',
   subscriptions: function() {
     return Meteor.subscribe('examplePublication');
-    /*
-    return [
-      Meteor.subscribe('examplePublication'),
-      Meteor.subscribe('examplePublication2')
-    ];
-    */
   },
   onBeforeAction: function() {
     // Code to run before route goes here.
@@ -29,4 +23,12 @@ Router.route('connect-to-twitter', {
 Router.route('dashboard.new', {
   path: '/dashboard/new',
   template: 'newDashboard'
+});
+
+Router.route('dashboard.show', {
+  path: '/dashboard/:_id',
+  template: 'showDashboard',
+  waitOn: function() {
+    return Meteor.subscribe('singleDashboard', this.params._id);
+  }
 });

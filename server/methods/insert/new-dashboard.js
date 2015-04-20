@@ -11,7 +11,7 @@ Meteor.methods({
 
     // Perform the insert.
     try {
-      var dashboardId = Dashboards.insert({
+      var dashboardId = Dashboard.insert({
         keywords: keywords,
         userId: Meteor.userId(),
         state: "running"
