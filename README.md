@@ -15,154 +15,35 @@ Here is what we will be doing in this assignment:
 
 For each of these steps, there are detailed walkthroughs in the Git Repo
 
-### 3.3 Defining a new dashboard
-In this assignment, we will build a page where users can enter up to 3 keywords that will be tracked in real time by our application.
+### 3.4 Tracking Tweets
+So far, our MVP is pretty lame: yes, we can connect with Twitter, and yes, we can create a record in the database, but we're not tracking tweets yet. In this walk through, we will setup tracking of Tweets, store Tweets in our database and show a user in real time the Tweets she is tracking.
 
-Like always, we will do this in small steps.
+#### The Twitter streaming API
+Before we go further, take a brief moment to check out the Twitter streaming API, in particular the public status/filter API: https://dev.twitter.com/streaming/reference/post/statuses/filter
 
-#### Introduce a "New Dashboard" page
+In a nutshell, via this API, our application can, in real time, receive tweets that match our keywords. We will be using an open source nodejs package that handles all the details of connecting to Twitter and receiving Tweets and so. You'll see that all we need to do is implement a couple of callbacks and we're done.
 
-Introduce a new route under dashboard/new
+Important note here: the way we are setting up this whole streaming thingy is not a bullet proof and scalable solution. We will start 1 stream per user. This means that, if we become successful with our applications, and have 100's of users, we will open 100's of streams to Twitter. Twitter doesn't like this, they prefer that you open just one stream and do post processing of tweets yourselves. I leave that part as an exercise of the reader ;)
 
-````javascript
-// in client/routes/routes-authenticated.js
-Router.route('dashboard.new', {
-  path: '/dashboard/new',
-  template: 'newDashboard'
-});
-````
-Next, introduce both the newDashboard view and controller.
+#### Starting a Twitter stream, once a user saves a dashboard.
+We will now implement the following scenario:
+1. at startup time, start a worker that starts a new twitter stream each time a user created a new dashboard
+1. that worker starts a twitter stream and processes incoming tweets by storing them into our database in a Tweets collection, together with a reference to the dashboard this tweets belongs to.
 
-For the view:
-````html
-<!-- in client/views/authenticated/new-dashboard.html -->
-<template name="newDashboard">
-  <div class="row">
-    <div class="col-xs-12 col-sm-6 col-md-4">
-      <h3 class="page-header">New Dashboard</h3>
-      <form id="newDashboard">
-        <div class="form-group">
-          <label for="keyword1">First Keyword</label>
-          <input type="text" name="keyword1" class="form-control" placeholder="#keyword" required>
-        </div>
-        <!-- end .form-group -->
-        <div class="form-group">
-          <label for="keyword2">Second Keyword</label>
-          <input type="text" name="keyword2" class="form-control" placeholder="#keyword">
-        </div>
-        <!-- end .form-group -->
-        <div class="form-group">
-          <label for="keyword3">Third Keyword</label>
-          <input type="text" name="keyword3" class="form-control" placeholder="#keyword">
-        </div>
-        <!-- end .form-group -->
-        <div class="form-group">
-          <input type="submit" class="btn btn-success" value="Save Settings">
-        </div>
-        <!-- end .form-group -->
-      </form>
-    </div>
-    <!-- end .col-xs-12 -->
-  </div>
-  <!-- end .row -->
-</template>
-````
-For the controller, things are a bit more complicated. We need to do some validations of the input: the first keyword is required, the other keywords are optional. The keywords themselves need to be single word strings. And when these validations pass, we'll need to save these keywords in the database, together with a reference to our user.
-
-So, start with introducing the controllers file at client/controllers/authenticated/new-dashboard.js.
-For form validation, we use a JQuery plugin called JQueryValidation for that. Check http://jqueryvalidation.org/ for details.
-
-So, in a first step, add the validations to the form. This can be done using the Template.mytemplate.onRendered callback of meteor (http://docs.meteor.com/#/full/template_onRendered). We'll wait a bit with the saving into the database part, we'll implement that in a bit. For the time being, just alert() the keywords of the form, if the form is valid.
-
-````javascript
-Template.newDashboard.onRendered(function() {
-  $('#newDashboard').validate({
-    rules: {
-      keyword1: {
-        required: true,
-        minlength: 2,
-        maxlength: 15
-      },
-      keyword2: {
-        required: false,
-        minlength: 2,
-        maxlength: 15
-      },
-      keyword3: {
-        required: false,
-        minlength: 2,
-        maxlength: 15
-      }
-    },
-    messages: {
-      keyword1: {
-        required: "Please enter at least one keywords",
-        minlength: "Keyword needs to have at least 2 characters.",
-        maxlength: "Keyword can have at most 15 characters."
-      },
-      keyword2: {
-        minlength: "Keyword needs to have at least 2 characters.",
-        maxlength: "Keyword can have at most 15 characters."
-      },
-      keyword3: {
-        minlength: "Keyword needs to have at least 2 characters.",
-        maxlength: "Keyword can have at most 15 characters."
-      },
-    },
-    submitHandler: function() {
-      var keywords = [$('[name="keyword1"]').val(), $('[name="keyword2"]').val(), $('[name="keyword3"]').val()];
-      // strip out empty strings if necessary
-      keywords = _.compact(keywords);
-      alert(keywords);
-    }
-  });
-});
-````
-
-In a regular web application, you'd submit this form either through a regular POST, or do an AJAX call to your server. In Meteor, this is abstracted away through means of _Meteor methods_. You can see these methods as remote procedure calls, whereby you do not have to worry a thing how these go over the wire.
-
-Let's introduce such a method that takes in an array of keywords, and that stores those keywords into a dashboards collections.
-For documentation on how to use Meteor methods check http://docs.meteor.com/#/full/meteor_methods
-
-In server/methods/insert introduce a file called new-dashboard.js with following content
-````javascript
-Meteor.methods({
-  newDashboard: function(keywords) {
-    // check the user is logged in.
-    if (!Meteor.userId()) {
-      throw new Meteor.Error("not-authorized");
-    }
-
-
-    // Check the argument. Assuming an Array type here.
-    check(keywords, Array);
-
-    // Perform the insert.
-    try {
-      var dashboardId = Dashboards.insert({
-        keywords: keywords,
-        userId: Meteor.userId(),
-        state: 'running'
-      });
-      return dashboardId;
-    } catch (exception) {
-      // If an error occurs, return it to the client.
-      return exception;
-    }
-  }
-});
-````
-A careful reader would have noticed this Dashboard.insert thingy. Well, in Meteor, as in every other self respecting web framework, you can define what data to store in the database and have an ORM (or ODM) handle most of the query details.
-
-Let's define collections/dashboards.js and define our dashboard collections in there.
-````javascript
-Dashboard = new Meteor.Collection('dashboard');
+Here's how we can do that.
+First, let's add a meteor package that contains a nodejs twitter client.
+```
+meteor add mrt:twit
+```
+In the collections/ folder, introduce a tweets.js file, and tell Meteor about your tweets collections.
+```javascript
+Tweets = new Meteor.Collection('tweets');
 
 /*
  * Allow
  */
 
-Dashboard.allow({
+Tweets.allow({
   insert: function() {
     // Disallow inserts on the client by default.
     return false;
@@ -181,7 +62,7 @@ Dashboard.allow({
  * Deny
  */
 
-Dashboard.deny({
+Tweets.deny({
   insert: function() {
     // Deny inserts on the client by default.
     return true;
@@ -195,22 +76,278 @@ Dashboard.deny({
     return true;
   }
 });
+```
+Now that we can store tweets, let's start listening for them.
+In server/admin/startup-functions introduce a file called twitter-streams.js.
 
-````
+We'll be adding a lot of stuff to this file. First off, implement the listener. This is mostly done via http://docs.meteor.com/#/full/observe.
 
-Now that we have the basic infrastructure in place to store the settings of a dashboard, let's call this method from our client controller. You need to replace that alert(keywords) call with the following code.
-````javascript
-submitHandler: function() {
-  var keywords = [$('[name="keyword1"]').val(), $('[name="keyword2"]').val(), $('[name="keyword3"]').val()];
-  // strip out empty strings if necessary
-  keywords = _.compact(keywords);
-  Meteor.call("newDashboard", keywords, function(error, result) {
-    if (error) {
-      Bert.alert("Something went wrong:" + error.reason, 'danger');
-    }
-    if (result) {
-      Bert.alert("Dashboard saved successfully", 'success');
+```javascript
+TwitterStreamListener = function() {
+  this.streams = {};
+}
+
+TwitterStreamListener.prototype.start = function() {
+  var self = this;
+  var dashboardCursor = Dashboard.find({
+    state: "running"
+  }).observe({
+    added: function(dashboard) {
+      console.log("starting dashboard");
+      self.startStream(dashboard);
+    },
+    removed: function(dashboard) {
+      self.streams[dashboard._id].stop();
+      delete self.streams[dashboard._id];
     }
   });
 }
-````
+
+TwitterStreamListener.prototype.startStream = function(dashboard) {
+  var twitterStream = new TwitterStream(dashboard);
+  this.streams[dashboard._id] = twitterStream;
+  twitterStream.start();
+}
+```
+
+What is important to note here: for each running dashboard in the database, a stream is started. When for whatever reason someone deletes that dashboard record, or updates it state to something else than "running", the stream for that dashboard will be stopped. This will come on handy later on.
+
+The actual listening and processing of tweets happens in another class. Add this TwitterStream class to the same twitter-stream.js file as follows.
+```javascript
+var Fiber = Npm.require('fibers');
+
+
+var getTwitMakerForUserId = function(userId) {
+  // fetch our application keys
+  var twtConfigs = Accounts.loginServiceConfiguration.findOne({
+    service: 'twitter'
+  });
+  // fetch the user for his twitter credentials
+  var user = Meteor.users.findOne({
+    _id: userId
+  });
+
+  return new TwitMaker({
+    consumer_key: twtConfigs.consumerKey,
+    consumer_secret: twtConfigs.secret,
+    access_token: user.services.twitter.accessToken,
+    access_token_secret: user.services.twitter.accessTokenSecret
+  });
+}
+
+TwitterStream = function(dashboard) {
+  this._dashboard = dashboard;
+  this._twitterClient = getTwitMakerForUserId(dashboard.userId);
+  this._stream = null;
+}
+
+TwitterStream.prototype.start = function() {
+  var self = this;
+  self._stream = self._twitterClient.stream("statuses/filter", {
+    track: self._dashboard.keywords,
+  });
+  self._stream.on('tweet', function(tweet) {
+    Fiber(function() {
+      Tweets.insert({
+        tweet: tweet,
+        createdAt: new Date(),
+        dashboardId: self._dashboard._id
+      });
+    }).run();
+  });
+}
+
+TwitterStream.prototype.stop = function() {
+  console.log("stopping the stream");
+  this._stream.stop();
+};
+```
+Take your time to walk through this code and try to understand what is happening here. One thing to note: this Fiber thingy. I'm not going to go in great detail what exactly this is. Let me suffice to say that, unlike regular nodejs code, Meteor tries to be synchronous as much as it can. A detailed explanation of Fibers, the nodejs event loop and stuff can be found at
+
+#### Finally, showing tweets on screen, in real time.
+Now that we are tracking tweets for our users, it becomes time we finally present them with on a dashboard page with these tweets.
+
+So, introduce a new route '/dashboard/:id', create a view and controller file for it.
+
+In client/routes/routes-authenticated.js, define the route:
+```javascript
+Router.route('dashboard.show', {
+  path: '/dashboard/:_id',
+  template: 'showDashboard',
+  waitOn: function() {
+    return Meteor.subscribe('singleDashboard', this.params._id);
+  }
+});
+```
+Here we'll for the first time explore Meteor's publish/subscribe. We will actually need 2 subscriptions: 1 to get the settings data of the dashboard, one for the tweets belonging to that dashboard. So, without further ado, let's create these publications.
+
+In server/publications/ create a file called dashboard-publications.js and publish the data for both the dashboard itself as well as the tweets for the given dashboard. More info about publish and subscribe in Meteor, check http://docs.meteor.com/#/full/meteor_publish
+
+```javascript
+Meteor.publish('singleDashboard', function(id) {
+  check(id, String);
+
+  if (!this.userId) {
+    self.ready();
+    return null;
+  }
+  return Dashboard.find({
+    _id: id,
+    userId: this.userId
+  });
+
+});
+
+Meteor.publish("tweets", function(dashboardId) {
+  check(dashboardId, String);
+  if (!this.userId) {
+    self.ready();
+    return nul;
+  }
+  return Tweets.find({
+    dashboardId: dashboardId
+  }, {
+    limit: 200,
+    sort: {
+      createdAt: -1
+    }
+  });
+
+});
+```
+
+Next up, introduce both the view and the controller for this new route, by now, you should know that drill ;)
+
+In client/views/authenticated/show-dashboard.html, add the necessary html for the dashboard and the tweets. At first, we'll be happy to just show the tweets. Let's worry about styling a little later.
+
+```html
+<template name="showDashboard">
+  <div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-6">
+      <h1>Dashboard for {{dashboard.keywords}}</h1>
+
+      <h2>Tweets</h2>
+      {{#each tweets}} {{> tweet}} {{/each}}
+
+    </div>
+  </div>
+</template>
+
+<template name="tweet">
+  <p> {{tweet.text}}</p>
+</template>
+```
+For the controller, we add the following code:
+```javascript
+Template.showDashboard.helpers({
+  dashboard: function() {
+    return Dashboard.findOne(Iron.controller().params._id);
+  },
+  tweets: function() {
+    return Tweets.find({
+      dashboardId: Iron.controller().params._id
+    }, {
+      sort: {
+        createdAt: -1
+      },
+      limit: 20
+    });
+  }
+});
+Template.showDashboard.onCreated(function() {
+  this.subscribe('tweets', Iron.controller().params._id);
+});
+
+```
+Just hit reload and check out a dashboard of yours, you should now see tweets come in in real time!!
+
+
+ One thing we'll need to do is represent these tweets in a nicely styled timeline. Luckily, there's plenty of examples online that do that for us. Check e.g. http://bootsnipp.com/snippets/featured/timeline-single-column
+ So, go grab the html and css you find there, and adapt the html to work show a nice timeline.
+
+```html
+<template name="showDashboard">
+  <div class="row">
+    <div class="col-xs-12 col-sm-6 col-md-6">
+      <h1>Dashboard for {{dashboard.keywords}}</h1>
+
+      <h2>Tweets</h2>
+      <div class="qa-message-list">
+        {{#each tweets}} {{> tweet}} {{/each}}
+      </div>
+
+    </div>
+  </div>
+</template>
+
+<template name="tweet">
+  <div class="message-item">
+    <div class="message-inner">
+      <div class="message-head clearfix">
+        <div class="avatar pull-left">
+          <a target="_blank" href="https://twitter.com/intent/user?screen_name={{tweet.user.screen_name}}">
+            <img src="{{tweet.user.profile_image_url}}">
+          </a>
+        </div>
+        <div class="user-detail">
+          <h5 class="handle">{{tweet.user.screen_name}}</h5>
+          <div class="post-meta">
+            <div class="asker-meta">
+              <span class="qa-message-what"></span>
+              <span class="qa-message-when">
+                <span class="qa-message-when-data">{{tweet.created_at}}</span>
+              </span>
+              <span class="qa-message-who">
+                <span class="qa-message-who-pad">by </span>
+                <span class="qa-message-who-data"><a target="_blank" href="https://twitter.com/intent/user?screen_name={{tweet.user.screen_name}}">{{tweet.user.screen_name}}</a>
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="qa-message-content">
+        {{{autolink tweet}}}
+      </div>
+    </div>
+  </div>
+</template>
+```
+
+And for the controller:
+```javascript
+Template.showDashboard.helpers({
+  dashboard: function() {
+    return Dashboard.findOne(Iron.controller().params._id);
+  },
+  tweets: function() {
+    return Tweets.find({
+      dashboardId: Iron.controller().params._id
+    }, {
+      sort: {
+        createdAt: -1
+      },
+      limit: 20
+    });
+  }
+});
+Template.showDashboard.onCreated(function() {
+  this.subscribe('tweets', Iron.controller().params._id);
+});
+```
+
+
+One last thingy: let's make sure links, users and hashtags are clickable, like on Twitter.com itself. Now, before you start parsing stuff, Twitter themselves provide a package called twitter-text https://github.com/twitter/twitter-text that has all this stuff ready for us. There's even a Meteor package for that.
+```
+meteor add chaosbohne:twitter-text
+```
+
+Next, we'll introduce a little UI helper that we can call within our template, called autolink, that automagically put links in our tweets.
+```javascript
+UI.registerHelper("autolink", function(tweet) {
+  return twttr.txt.autoLink(tweet.text, {
+    urlEntities: tweet.entities.urls
+  });
+});
+```
+One last refresh et voila, we have our MVP.
