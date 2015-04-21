@@ -41,8 +41,6 @@
     this.Then(/^I should be logged in$/, function (callback) {
       // Write code here that turns the phrase above into concrete actions
       this.browser.
-      pause(3000).
-      saveScreenshot(process.env.PWD + '/auth1.png').
       waitForExist('a.dropdown-toggle', 3000). //checking on exists, not visible, there might be a Bert in front of the element
       getText('a.dropdown-toggle').should.become('joe@example.com').and.notify(callback);
       //saveScreenshot(process.env.PWD + '/auth1.png');
