@@ -50,7 +50,7 @@ Template.signup.onRendered(function(){
           Bert.alert(error.reason, 'danger');
         } else {
           Bert.alert('Welcome!', 'success');
-        }
+          Router.go("connect-to-twitter");      }
       });
     }
   });

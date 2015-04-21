@@ -18,5 +18,4 @@ UI.registerHelper("autolink", function(tweet) {
   return twttr.txt.autoLink(tweet.text, {
     urlEntities: tweet.entities.urls
   });
-
 });

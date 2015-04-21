@@ -47,12 +47,3 @@ Router.onBeforeAction(checkUserLoggedIn, {
     'reset-password'
   ]
 });
-
-Router.onBeforeAction(userAuthenticated, {
-  only: [
-    'signup',
-    'login',
-    'recover-password',
-    'reset-password'
-  ]
-});
