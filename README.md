@@ -82,6 +82,11 @@ In your settings-development.json file, add a configuration like the following
 }
 ````
 
+Important note: Meteor will not automatically take these settings into account, unless you tell meteor explicitely at startup.
+```
+meteor --settings settings-development.json
+```
+
 A few more things to: First, we need to store these credentials into the database in a "Service Configuration Object". Don't worry about it too much, this is a meteor thingy. The best way to do this is at startup time of your application. So under server/admin/startup-functions/ introduce a file called: configure-twitter.js and add following content:
 
 ````javascript
