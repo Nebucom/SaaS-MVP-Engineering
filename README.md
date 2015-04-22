@@ -92,7 +92,6 @@ configureTwitter = function() {
   });
   ServiceConfiguration.configurations.insert(Meteor.settings.app_keys.twitter);
 };
-};
 ````
 And call this function at startup time:
 ````javascript
