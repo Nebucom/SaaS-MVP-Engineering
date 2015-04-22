@@ -214,3 +214,13 @@ submitHandler: function() {
   });
 }
 ```
+
+#### Check your database
+
+In order to check what is in your database, in this case `mongo db`, we will need to connect to it. Meteor makes this easy by using the command `meteor mongo`.
+
+Here are some basic mongo db functions to try:
+
+`show collections` Show all the different collections created, expect `dashboard` to be amongst them
+`db.dashboard.find` Show all documents in collection `dashboard`
+
