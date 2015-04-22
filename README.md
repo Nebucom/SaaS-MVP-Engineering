@@ -139,7 +139,7 @@ Meteor.methods({
 
     // Perform the insert.
     try {
-      var dashboardId = Dashboards.insert({
+      var dashboardId = Dashboard.insert({
         keywords: keywords,
         userId: Meteor.userId(),
         state: 'running'
@@ -199,7 +199,7 @@ Dashboard.deny({
 ````
 
 Now that we have the basic infrastructure in place to store the settings of a dashboard, let's call this method from our client controller. You need to replace that alert(keywords) call with the following code.
-````javascript
+```javascript
 submitHandler: function() {
   var keywords = [$('[name="keyword1"]').val(), $('[name="keyword2"]').val(), $('[name="keyword3"]').val()];
   // strip out empty strings if necessary
@@ -213,4 +213,4 @@ submitHandler: function() {
     }
   });
 }
-````
+```
