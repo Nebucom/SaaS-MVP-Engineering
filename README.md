@@ -1,17 +1,24 @@
 # SaaS-MVP-Engineering
 
-Welcome in this online course on SaaS MVP Engineering.
+Up to now, we built our MVP, have a basic continuous delivery pipeline there, which allows us the push changes into production at the speed of light (almost). So let the users come in!!
 
+Well, assuming you are doing ok with your marketing, you'll have some people trying out your new service. Congrats, cool!!
 
-In the previous assignments, we built our MVP. Now it is time to put it online and let the world see your brilliant piece of work.
+Big question off course: will these people stay with your service? And for your self, will you be able to handle all these users? Will you scale?
 
-Like with the software itself, we're going to take an minimalistic approach here, leveraging as much as possible existing things. Therefor, we will deploy our MVP on a PaaS, platform as a service. As it happens, the company behind Meteor is offering such a PaaS.
+Let's start with this last question. Will you scale?
 
-The benefits of such a PaaS are trivial for us: no need to worry about installing and operating mongo, nodejs and stuff. All that is taken care of by the PaaS provider.
+## Assignment 5
+My 2 cents on this: if you are successful, regardless of your architecture and technology, you will face scaling issue. Things will brake. More important question is: did you see it coming? Do you know if something went bad?
 
-So without further ado, let's deploy.
+Monitoring is the term used for all activities related to collecting metrics that might (or might not) indicate that your app, servers, databases, whatever are running fine.
 
-## Assignment 4.2: some more tests
-We have our first tests, but the usability still isn't what it should be. Shouldn't we provide a logged in user with extra navigation so they know they can setup a new dashboard? And shouldn't we automagically guide a user to a live dashboard after she filled out the new dashboard form?
+For meteor, there is a service called (kadira)[https://kadira.io] that you can use for monitoring your app.
 
-Let's write these features BDD style. I'm not going to give you a lot of hint here, try for yourselves ;)
+Head over to https://karida.io and create an account.
+
+After creating your account, create an app in kadira, and follow the instructions you see. In our setup, we'll add the kadira keys via your settings files.
+
+I advise to not include these keys in your development config file, only in your production one.
+
+Redeploy your app and play around a bit, and see the kadira dashboard reflect changes. Under the alerts menu, you can define email alerts for when things go wrong: errors, slow methods, ...
