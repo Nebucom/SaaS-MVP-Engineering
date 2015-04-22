@@ -8,17 +8,73 @@ Big question off course: will these people stay with your service? And for your 
 
 Let's start with this last question. Will you scale?
 
-## Assignment 5
-My 2 cents on this: if you are successful, regardless of your architecture and technology, you will face scaling issue. Things will brake. More important question is: did you see it coming? Do you know if something went bad?
+## Assignment 5.1
+We brainstormed about our onboarding/activation funnel, let's start implementing analytics so we can start measuring our funnel.
 
-Monitoring is the term used for all activities related to collecting metrics that might (or might not) indicate that your app, servers, databases, whatever are running fine.
+Well, there's something else we could do first: funnels work nicely once you have a "significant" number of users. For our MVP, we'll initially only have a few users. Instead of already doing analytics, wouldn't it be nice to be able to just "peak" over the shoulders of our users and look at how they use our product?
 
-For meteor, there is a service called (kadira)[https://kadira.io] that you can use for monitoring your app.
+Turns out, that is easy ;) Enter https://www.inspectlet.com. With just a simple snippet of javascript, inspectlet allows you to "record" the screens of your users.
 
-Head over to https://karida.io and create an account.
+Here's how: Create an account with inspectlet. Take 2 minutes to read through the _Optional Next Steps_ that you see when you are presented with the inspectlet embed code. We're going to use these thingies ;)
 
-After creating your account, create an app in kadira, and follow the instructions you see. In our setup, we'll add the kadira keys via your settings files.
+In order for inspectlet to work properly, we need to load this embed code in our client, preferably at startup time.
 
-I advise to not include these keys in your development config file, only in your production one.
+So, introduce in /client/startup a file called startup.js with the following content:
 
-Redeploy your app and play around a bit, and see the kadira dashboard reflect changes. Under the alerts menu, you can define email alerts for when things go wrong: errors, slow methods, ...
+```javascript
+Meteor.startup(function() {
+  Meteor.subscribe("userData");
+
+  if (Meteor.settings && Meteor.settings.public &&
+    Meteor.settings.public.inspectlet && Meteor.settings.public.inspectlet.id) {
+
+    window.__insp = window.__insp || [];
+    __insp.push(['wid', Meteor.settings.public.inspectlet.id]);
+    (function() {
+      function __ldinsp() {
+        var insp = document.createElement('script');
+        insp.type = 'text/javascript';
+        insp.async = true;
+        insp.id = "inspsync";
+        insp.src = ('https:' == document.location.protocol ? 'https' : 'http') + '://cdn.inspectlet.com/inspectlet.js';
+        var x = document.getElementsByTagName('script')[0];
+        x.parentNode.insertBefore(insp, x);
+      }
+      if (window.attachEvent) {
+        window.attachEvent('onload', __ldinsp);
+      } else {
+        window.addEventListener('load', __ldinsp, false);
+      }
+    })();
+  }
+});
+```
+What this does is add the inspectlet code to your app, if the meteor settings file contains inspectlet settings. In dev, we might not want to include that. So update your settings-production.json with a setting for inspectlet.
+
+```javascript
+"public": {
+  "inspectlet": {
+    "id": <your key>
+  }
+},
+```
+You'll notice a subscription to user data. By default, Meteor doesn't put a lot of stuff in the user data it sends over the wire. By explicitely subscribing to a _userdata_ subscription, we have more control over what user data we send over.
+So under /server/publications, introduce a file called userdata.js and aadd:
+```javascript
+Meteor.publish("userData", function() {
+	if (this.userId) {
+		return Meteor.users.find({
+			_id: this.userId
+		}, {
+			fields: {
+				'services.twitter.accessToken': 0,
+				'services.twitter.accessTokenSecret': 0,
+				'services.password': 0
+			}
+		});
+	} else {
+		this.ready();
+	}
+});
+```
+so we send over the whole user object, except for it't twitter keys. Do not forget to update your browser policy to allow the browser to load script from inspectlet.com
