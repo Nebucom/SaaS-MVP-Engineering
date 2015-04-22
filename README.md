@@ -162,7 +162,7 @@ TwitterStream.prototype.stop = function() {
   this._stream.stop();
 };
 ```
-Take your time to walk through this code and try to understand what is happening here. One thing to note: this Fiber thingy. I'm not going to go in great detail what exactly this is. Let me suffice to say that, unlike regular nodejs code, Meteor tries to be synchronous as much as it can. A detailed explanation of Fibers, the nodejs event loop and stuff can be found at
+Take your time to walk through this code and try to understand what is happening here. One thing to note: this Fiber thingy. I'm not going to go in great detail what exactly this is. Let me suffice to say that, unlike regular nodejs code, Meteor tries to be synchronous as much as it can. A detailed explanation of Fibers, the nodejs event loop and stuff can be found at https://meteorhacks.com/fibers-eventloop-and-meteor.html
 
 #### Finally, showing tweets on screen, in real time.
 Now that we are tracking tweets for our users, it becomes time we finally present them with on a dashboard page with these tweets.
