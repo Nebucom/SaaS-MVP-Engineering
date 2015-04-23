@@ -15,4 +15,18 @@ Template.showDashboard.helpers({
 });
 Template.showDashboard.onCreated(function() {
   this.subscribe('tweets', Iron.controller().params._id);
+  this.mixpanelTimer = null
+});
+
+Template.showDashboard.onRendered(function(){
+  this.mixpanelTimer = Meteor.setTimeout(function(){
+     mixpanel.track('1 minute dashboard');
+  }, 60*1000);
+});
+
+Template.showDashboard.onDestroyed(function(){
+  try {
+    Meteor.clearTimeout(this.mixpanelTimer);
+  }
+  catch(err){}
 });

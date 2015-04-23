@@ -1,6 +1,9 @@
 {
   "public": {
-    "key": "value"
+    "__inspectlet": {
+      "id": 338395250
+    },
+    "mixpanel": "d75ecb2283cb94a889a52647a0d22d9a"
   },
   "app_keys": {
     "twitter": {

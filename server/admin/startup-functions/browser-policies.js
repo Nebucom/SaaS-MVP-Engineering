@@ -8,6 +8,7 @@ customBrowserPolicies = function() {
   BrowserPolicy.content.allowImageOrigin("*.twimg.com");
   var trusted = [
   '*.inspectlet.com',
+  '*.mxpnl.com'
 
 ];
 

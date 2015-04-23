@@ -35,6 +35,11 @@ userAuthenticated = function(){
   }
 }
 
+logMixpanel = function(){
+  if( !Meteor.loggingIn() && Meteor.user() ){
+    mixpanel.track(Router.current().route.getName());
+  }
+}
 /*
 * Run Hooks
 */
@@ -47,3 +52,5 @@ Router.onBeforeAction(checkUserLoggedIn, {
     'reset-password'
   ]
 });
+
+Router.onAfterAction(logMixpanel);

@@ -64,6 +64,7 @@ oauth1@1.1.4
 observe-sequence@1.0.6
 ordered-dict@1.0.3
 package-version-parser@3.0.3
+percolatestudio:percolatestudio-mixpanel@0.5.0
 practicalmeteor:chai@1.9.2_3
 practicalmeteor:loglevel@1.1.0_3
 random@1.0.3

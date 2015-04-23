@@ -22,5 +22,11 @@ Meteor.startup(function() {
         window.addEventListener('load', __ldinsp, false);
       }
     })();
-  }
+  };
+
+  if (Meteor.settings && Meteor.settings.public &&
+    Meteor.settings.public.mixpanel) {
+      mixpanel.init(Meteor.settings.public.mixpanel);
+    }
+
 });
