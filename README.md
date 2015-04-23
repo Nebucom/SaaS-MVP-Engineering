@@ -13,9 +13,9 @@ My 2 cents on this: if you are successful, regardless of your architecture and t
 
 Monitoring is the term used for all activities related to collecting metrics that might (or might not) indicate that your app, servers, databases, whatever are running fine.
 
-For meteor, there is a service called (kadira)[https://kadira.io] that you can use for monitoring your app.
+For meteor, there is a service called [kadira](https://kadira.io) that you can use for monitoring your app.
 
-Head over to https://karida.io and create an account.
+Head over to https://kadira.io and create an account.
 
 After creating your account, create an app in kadira, and follow the instructions you see. In our setup, we'll add the kadira keys via your settings files.
 
